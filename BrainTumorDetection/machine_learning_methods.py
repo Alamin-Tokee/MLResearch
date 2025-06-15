@@ -36,7 +36,7 @@ print("Accuracy:",metrics.accuracy_score(ytest, pred4))
 print("Precision:",metrics.precision_score(ytest, pred4))
 print("Recall:",metrics.recall_score(ytest, pred4))
 
-from sklearn.datasets import load_iris
+# Add necessary library to tune hyperparameter using gridsearchcv
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import classification_report
@@ -73,6 +73,94 @@ best_rf = grid_search.best_estimator_
 y_pred = best_rf.predict(xtest)
 print("\nClassification Report:\n", classification_report(ytest, y_pred))
 
+cnf_matrix = metrics.confusion_matrix(ytest, y_pred)
+cnf_matrix
+class_names=[0,1] # name  of classes
+fig, ax = plt.subplots()
+tick_marks = np.arange(len(class_names))
+plt.xticks(tick_marks, class_names)
+plt.yticks(tick_marks, class_names)
+# create heatmap
+sns.heatmap(pd.DataFrame(cnf_matrix), annot=True, cmap="Greens" ,fmt='g')
+ax.xaxis.set_label_position("top")
+plt.tight_layout()
+plt.title('Confusion matrix', y=1.1)
+plt.ylabel('Actual label')
+plt.xlabel('Predicted label')
+
+
+# Add adaboost classifier 
+from sklearn.ensemble import AdaBoostClassifier
+
+ab = AdaBoostClassifier(n_estimators=50)
+ab.fit(xtrain,ytrain)
+pred8 = ab.predict(xtest)
+ab.score(xtest,ytest)
+
+cnf_matrix = metrics.confusion_matrix(ytest, pred8)
+cnf_matrix
+class_names=[0,1] # name  of classes
+fig, ax = plt.subplots()
+tick_marks = np.arange(len(class_names))
+plt.xticks(tick_marks, class_names)
+plt.yticks(tick_marks, class_names)
+# create heatmap
+sns.heatmap(pd.DataFrame(cnf_matrix), annot=True, cmap="YlGnBu" ,fmt='g')
+ax.xaxis.set_label_position("top")
+plt.tight_layout()
+plt.title('Confusion matrix', y=1.1)
+plt.ylabel('Actual label')
+plt.xlabel('Predicted label')
+
+print("F1:",metrics.f1_score(ytest, pred8))
+print("Accuracy:",metrics.accuracy_score(ytest, pred8))
+print("Precision:",metrics.precision_score(ytest, pred8))
+print("Recall:",metrics.recall_score(ytest, pred8))
+
+
+
+# add gridsearchcv to tune the model
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.datasets import load_wine
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.metrics import classification_report
+
+
+base_estimator = DecisionTreeClassifier(random_state=42)
+
+# Define AdaBoost model
+adb = AdaBoostClassifier(estimator=base_estimator, random_state=42)
+
+# Parameter grid for GridSearchCV
+param_grid = {
+    'n_estimators': [50, 100, 200],
+    'learning_rate': [0.01, 0.1, 0.5, 1.0],
+    'estimator__max_depth': [1, 2, 3]  # tuning the depth of the weak learner
+}
+
+# Set up GridSearchCV
+grid_search = GridSearchCV(estimator=adb,
+                           param_grid=param_grid,
+                           scoring='accuracy',
+                           cv=5,
+                           n_jobs=-1,
+                           verbose=2)
+
+# Fit the grid search to the data
+grid_search.fit(xtrain, ytrain)
+
+# Output the best parameters and accuracy
+print("Best Parameters:", grid_search.best_params_)
+print("Best Cross-Validation Accuracy:", grid_search.best_score_)
+
+# Test set evaluation
+best_model = grid_search.best_estimator_
+y_pred = best_model.predict(xtest)
+print("\nClassification Report on Test Data:\n", classification_report(ytest, y_pred))
+
+
+# Generate confusion matrix for gridsearchcv
 cnf_matrix = metrics.confusion_matrix(ytest, y_pred)
 cnf_matrix
 class_names=[0,1] # name  of classes
